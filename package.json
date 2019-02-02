@@ -16,7 +16,7 @@
   },
   "scripts": {
     "start": "concurrently --kill-others-on-fail \"yarn run server\" \"yarn run client\"",
-    "server": "nodemon --watch ../stiff-server/ ../stiff-server/server.js",
+    "server": "cd ../stiff-server/ && yarn start",
     "client": "react-scripts start",
     "build": "react-scripts build",
     "format": "prettier --config package.json 'src/**/*.{js,css}' --write",
