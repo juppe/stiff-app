@@ -8,7 +8,10 @@ export default class Chat extends Component {
   constructor(props) {
     super(props)
 
+    const { room } = this.props.match.params
+
     this.state = {
+      room: room,
       message: '',
       messages: []
     }
@@ -17,6 +20,9 @@ export default class Chat extends Component {
   }
 
   componentDidMount() {
+    /* Join socket room */
+    this.socket.emit('join_room', this.state.room)
+
     this.socket.on('list_messages', messages => {
       this.setState({
         messages: messages
@@ -51,7 +57,12 @@ export default class Chat extends Component {
 
   handleSubmit = async event => {
     event.preventDefault()
+    const timestamp = Date.now()
+
+    /* Emit new message to socket */
     this.socket.emit('write_message', {
+      date: timestamp,
+      room: this.state.room,
       message: this.state.message
     })
   }
