@@ -9,13 +9,13 @@ export default class Login extends Component {
 
     this.state = {
       isLoading: false,
-      email: '',
+      username: '',
       password: ''
     }
   }
 
   validateForm() {
-    return this.state.email.length > 0 && this.state.password.length > 0
+    return this.state.username.length > 0 && this.state.password.length > 0
   }
 
   handleChange = event => {
@@ -33,15 +33,19 @@ export default class Login extends Component {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: this.state.email,
+          username: this.state.username,
           password: this.state.password
         })
       })
-      const User = await response.json()
-      console.log(User)
-      this.props.userHasAuthenticated(true)
+
+      if (response.ok) {
+        this.props.userHasAuthenticated(true)
+      } else {
+        alert('Login failed!')
+      }
+      this.setState({ isLoading: false })
     } catch (e) {
-      alert(e.message)
+      alert('Login failed:' + e.message)
       this.setState({ isLoading: false })
     }
   }
@@ -50,12 +54,12 @@ export default class Login extends Component {
     return (
       <div className="Login">
         <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="email">
+          <FormGroup controlId="username">
             <FormLabel>Email</FormLabel>
             <FormControl
               autoFocus
               type="email"
-              value={this.state.email}
+              value={this.state.username}
               onChange={this.handleChange}
             />
           </FormGroup>

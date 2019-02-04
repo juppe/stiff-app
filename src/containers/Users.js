@@ -31,8 +31,8 @@ export default class Users extends Component {
   render() {
     const { users } = this.state
     const userlist = users.map(u => (
-      <li key={u.email}>
-        {u.nickname} - ({u.email})
+      <li key={u.username}>
+        {u.nickname} - ({u.username})
       </li>
     ))
 
