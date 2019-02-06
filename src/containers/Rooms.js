@@ -48,13 +48,19 @@ export default class Rooms extends Component {
   }
 
   componentDidMount() {
+    this.socket.on('connect', () => {
+      this.socket.emit('list_rooms')
+    })
+
     this.socket.on('list_rooms', rooms => {
+      console.log('list_rooms')
       this.setState({
         rooms: rooms
       })
     })
 
     this.socket.on('new_room', room => {
+      console.log('new_room')
       var rooms = this.state.rooms
       rooms.push(room)
       this.setState({
@@ -64,14 +70,13 @@ export default class Rooms extends Component {
   }
 
   componentWillUnmount() {
-    this.socket.off('list_rooms')
-    this.socket.off('new_room')
+    this.socket.close()
   }
 
   render() {
     const roomslist = this.state.rooms.map(u => (
       <li key={u}>
-        <Link to={"/chat/"+u}>{u}</Link>
+        <Link to={'/chat/' + u}>{u}</Link>
       </li>
     ))
 

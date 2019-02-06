@@ -21,7 +21,9 @@ export default class Chat extends Component {
 
   componentDidMount() {
     /* Join socket room */
-    this.socket.emit('join_room', this.state.room)
+    this.socket.on('connect', () => {
+      this.socket.emit('join_room', this.state.room)
+    })
 
     this.socket.on('list_messages', messages => {
       this.setState({
@@ -29,8 +31,7 @@ export default class Chat extends Component {
       })
     })
 
-    this.socket.on('new_messsage', message => {
-      console.log('receive_message')
+    this.socket.on('new_chat', message => {
       var mess = this.state.messages
       mess.push(JSON.parse(message))
       this.setState({
@@ -40,9 +41,7 @@ export default class Chat extends Component {
   }
 
   componentWillUnmount() {
-    this.socket.off('list_messages')
-    this.socket.off('new_messsage')
-    this.socket.off('write_message')
+    this.socket.close()
   }
 
   validateForm() {
@@ -59,23 +58,32 @@ export default class Chat extends Component {
     event.preventDefault()
     const timestamp = Date.now()
 
-    /* Emit new message to socket */
-    this.socket.emit('write_message', {
-      date: timestamp,
-      room: this.state.room,
-      message: this.state.message
-    })
+    /* Post new message */
+    try {
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: timestamp,
+          room: this.state.room,
+          message: this.state.message
+        })
+      })
+      this.setState({ message: '' })
+    } catch (e) {
+      alert(e.message)
+    }
   }
 
   render() {
     return (
       <div className="Chat">
-        <h4>Chat</h4>
+        <h4>Chat: {this.state.room}</h4>
         <div>
           {this.state.messages.map(message => {
             return (
               <div key={message.date}>
-                {message.username}: {message.message}
+                {message.nickname}@{message.date}: {message.message}
               </div>
             )
           })}

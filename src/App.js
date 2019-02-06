@@ -70,7 +70,9 @@ class App extends Component {
         <div className="App container">
           <Navbar bg="light">
             <Navbar.Brand>
-              <Link to="/" className='nav-link'>Stiff Chat Service</Link>
+              <Link to="/" className="nav-link">
+                Stiff Chat Service
+              </Link>
             </Navbar.Brand>
             <Navbar.Toggle />
             <Navbar.Collapse className="justify-content-end">

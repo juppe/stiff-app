@@ -1,7 +1,7 @@
 import React from 'react'
 import { Route, Redirect } from 'react-router-dom'
 
-function querystring(name, url = window.location.href) {
+const querystring = (name, url = window.location.href) => {
   name = name.replace(/[[]]/g, '\\$&')
 
   const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)', 'i')
