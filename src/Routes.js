@@ -1,51 +1,26 @@
 import React from 'react'
 import { Route, Switch } from 'react-router-dom'
 
-import Home from './containers/Home'
-import Login from './containers/Login'
-import Signup from './containers/Signup'
-import Users from './containers/Users'
-import Rooms from './containers/Rooms'
-import Chat from './containers/Chat'
-import NotFound from './containers/NotFound'
+import Home from './components/Home'
+import Login from './components/Login'
+import Logout from './components/Logout'
+import Signup from './components/Signup'
+import Users from './components/Users'
+import Rooms from './components/Rooms'
+import Chat from './components/Chat'
+import NotFound from './components/NotFound'
 
-import AppliedRoute from './components/AppliedRoute'
-import AuthenticatedRoute from './components/AuthenticatedRoute'
-import UnauthenticatedRoute from './components/UnauthenticatedRoute'
+import RouteAuthenticated from './RouteAuthenticated'
 
-export default ({ childProps }) => (
+export default () => (
   <Switch>
-    <AppliedRoute path="/" exact component={Home} props={childProps} />
-    <UnauthenticatedRoute
-      path="/login"
-      exact
-      component={Login}
-      props={childProps}
-    />
-    <UnauthenticatedRoute
-      path="/signup"
-      exact
-      component={Signup}
-      props={childProps}
-    />
-    <AuthenticatedRoute
-      path="/users"
-      exact
-      component={Users}
-      props={childProps}
-    />
-    <AuthenticatedRoute
-      path="/rooms"
-      exact
-      component={Rooms}
-      props={childProps}
-    />
-    <AuthenticatedRoute
-      path="/chat/:room"
-      exact
-      component={Chat}
-      props={childProps}
-    />
+    <Route path="/" exact component={Home} />
+    <Route path="/login" exact component={Login} />
+    <Route path="/logout" exact component={Logout} />
+    <Route path="/signup" exact component={Signup} />
+    <RouteAuthenticated path="/users" exact component={Users} />
+    <RouteAuthenticated path="/rooms" exact component={Rooms} />
+    <RouteAuthenticated path="/chat" exact component={Chat} />
     <Route component={NotFound} />
   </Switch>
 )
