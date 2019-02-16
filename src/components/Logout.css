@@ -1,0 +1,11 @@
+@media all and (min-width: 480px) {
+  .Logout {
+    text-align: center;
+    padding: 50px 0;
+  }
+
+  .Logout form {
+    margin: 0 auto;
+    max-width: 120px;
+  }
+}
