@@ -1,53 +1,39 @@
-import React, { Component } from 'react'
+import React, { useState, useContext } from 'react'
 import { FormGroup, FormControl, FormLabel } from 'react-bootstrap'
 import LoaderButton from '../components/LoaderButton'
+import { UserContext } from '../UserContext'
 import './Signup.css'
 
-export default class Signup extends Component {
-  constructor(props) {
-    super(props)
+const Signup = props => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [username, setUsername] = useState('')
+  const [nickname, setNickname] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
-    this.state = {
-      isLoading: false,
-      username: '',
-      nickname: '',
-      password: '',
-      confirmPassword: '',
-      confirmationCode: ''
-    }
-  }
+  const userContext = useContext(UserContext)
 
-  validateForm() {
+  const validateForm = () => {
     return (
-      this.state.username.length > 0 &&
-      this.state.nickname.length > 0 &&
-      this.state.password.length > 0 &&
-      this.state.password === this.state.confirmPassword
+      username.length > 0 &&
+      nickname.length > 0 &&
+      password.length > 0 &&
+      password === confirmPassword
     )
   }
 
-  validateConfirmationForm() {
-    return this.state.confirmationCode.length > 0
-  }
-
-  handleChange = event => {
-    this.setState({
-      [event.target.id]: event.target.value
-    })
-  }
-
-  handleRegisterSubmit = async event => {
+  const handleSubmit = async event => {
     event.preventDefault()
-    this.setState({ isLoading: true })
+    setIsLoading(true)
 
     try {
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: this.state.username,
-          nickname: this.state.nickname,
-          password: this.state.password
+          username: username,
+          nickname: nickname,
+          password: password
         })
       })
       const res = await response.json()
@@ -57,59 +43,58 @@ export default class Signup extends Component {
       alert('New user: ' + e.message)
     }
 
-    this.props.userHasAuthenticated(true)
-    this.props.history.push('/')
-    this.setState({ isLoading: false })
+    setIsLoading(false)
+    userContext.isAuthenticated = true
+    props.history.push('/rooms')
   }
 
-  render() {
-    return (
-      <div className="Signup">
-        <form onSubmit={this.handleRegisterSubmit}>
-          <FormGroup controlId="username">
-            <FormLabel>Email</FormLabel>
-            <FormControl
-              autoFocus
-              type="email"
-              value={this.state.username}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
-          <FormGroup controlId="nickname">
-            <FormLabel>Nickname</FormLabel>
-            <FormControl
-              autoFocus
-              type="text"
-              value={this.state.nickname}
-              onChange={this.handleChange}
-            />
-          </FormGroup>
-          <FormGroup controlId="password">
-            <FormLabel>Password</FormLabel>
-            <FormControl
-              value={this.state.password}
-              onChange={this.handleChange}
-              type="password"
-            />
-          </FormGroup>
-          <FormGroup controlId="confirmPassword">
-            <FormLabel>Confirm Password</FormLabel>
-            <FormControl
-              value={this.state.confirmPassword}
-              onChange={this.handleChange}
-              type="password"
-            />
-          </FormGroup>
-          <LoaderButton
-            block
-            disabled={!this.validateForm()}
-            type="submit"
-            isLoading={this.state.isLoading}
-            text="Signup"
-            loadingText="Signing up…"
+  return (
+    <div className="Signup">
+      <form onSubmit={handleSubmit}>
+        <FormGroup controlId="username">
+          <FormLabel>Email</FormLabel>
+          <FormControl
+            autoFocus
+            type="email"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
           />
-        </form>
-      </div>
-    )
-  }
+        </FormGroup>
+        <FormGroup controlId="nickname">
+          <FormLabel>Nickname</FormLabel>
+          <FormControl
+            type="text"
+            value={nickname}
+            onChange={e => setNickname(e.target.value)}
+          />
+        </FormGroup>
+        <FormGroup controlId="password">
+          <FormLabel>Password</FormLabel>
+          <FormControl
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            type="password"
+          />
+        </FormGroup>
+        <FormGroup controlId="confirmPassword">
+          <FormLabel>Confirm Password</FormLabel>
+          <FormControl
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            type="password"
+          />
+        </FormGroup>
+        <LoaderButton
+          block
+          disabled={!validateForm()}
+          type="submit"
+          isLoading={isLoading}
+          text="Signup"
+          loadingText="Signing up…"
+        />
+      </form>
+    </div>
+  )
 }
+
+export default Signup

@@ -1,111 +1,112 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import io from 'socket.io-client'
 import { FormGroup, FormControl, FormLabel } from 'react-bootstrap'
-import LoaderButton from '../components/LoaderButton'
+import LoaderButton from './LoaderButton'
 import './Rooms.css'
 
-export default class Rooms extends Component {
-  constructor(props) {
-    super(props)
+const socket = io('localhost:3001')
 
-    this.state = {
-      isLoading: false,
-      roomname: '',
-      rooms: []
+const Rooms = () => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [roomName, setRoomName] = useState('')
+  const [, setNumRooms] = useState(0)
+  const [roomsList, setRoomsList] = useState([])
+
+  useEffect(() => {
+    socket.open()
+    socket.emit('list_rooms')
+    return () => {
+      socket.close()
     }
+  }, [])
 
-    this.socket = io('localhost:3001')
+  useEffect(() => {
+    socket.on('list_rooms', getRoomsList)
+    return () => socket.removeListener('list_rooms', getRoomsList)
+  }, [roomsList])
+
+  useEffect(() => {
+    socket.on('new_room', submitNewRoom)
+    return () => socket.removeListener('new_room', submitNewRoom)
+  }, [roomsList])
+
+  const getRoomsList = rooms => {
+    setRoomsList(rooms)
+    setNumRooms(rooms.length)
   }
 
-  validateForm() {
-    return this.state.roomname.length > 0
+  const submitNewRoom = room => {
+    var rooms = roomsList
+    rooms.push(room)
+    setRoomsList(rooms)
+    setNumRooms(rooms.length)
   }
 
-  handleChange = event => {
-    this.setState({
-      [event.target.id]: event.target.value
-    })
+  const validateForm = () => {
+    return roomName.length > 0
   }
 
-  handleSubmit = async event => {
+  const handleSubmit = async event => {
     event.preventDefault()
-    this.setState({ isLoading: true })
+    setIsLoading(true)
 
     try {
       await fetch('/api/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          roomname: this.state.roomname
+          roomname: roomName
         })
       })
-      this.setState({ isLoading: false, roomname: '' })
+      setRoomName('')
     } catch (e) {
       alert(e.message)
-      this.setState({ isLoading: false })
+    }
+    setIsLoading(false)
+  }
+
+  const listRooms = roomsList => {
+    if (roomsList.length) {
+      return roomsList.map(room => (
+        <li key={room}>
+          <Link to={{ pathname: '/chat', state: { selectedRoom: room } }}>
+            {room}
+          </Link>
+        </li>
+      ))
     }
   }
 
-  componentDidMount() {
-    this.socket.on('connect', () => {
-      this.socket.emit('list_rooms')
-    })
-
-    this.socket.on('list_rooms', rooms => {
-      console.log('list_rooms')
-      this.setState({
-        rooms: rooms
-      })
-    })
-
-    this.socket.on('new_room', room => {
-      console.log('new_room')
-      var rooms = this.state.rooms
-      rooms.push(room)
-      this.setState({
-        rooms: rooms
-      })
-    })
-  }
-
-  componentWillUnmount() {
-    this.socket.close()
-  }
-
-  render() {
-    const roomslist = this.state.rooms.map(u => (
-      <li key={u}>
-        <Link to={'/chat/' + u}>{u}</Link>
-      </li>
-    ))
-
-    return (
-      <div className="Rooms">
-        <h4>Chat rooms</h4>
-        <div>
-          <ul>{roomslist}</ul>
-        </div>
-        <form onSubmit={this.handleSubmit}>
+  return (
+    <div className="Rooms">
+      <h4>Chat rooms</h4>
+      <div>
+        <ul>{listRooms(roomsList)}</ul>
+      </div>
+      <div>
+        <form onSubmit={handleSubmit}>
           <FormGroup controlId="roomname">
             <FormLabel>Create New Room</FormLabel>
             <FormControl
               autoFocus
               type="text"
-              value={this.state.roomname}
-              onChange={this.handleChange}
+              value={roomName}
+              onChange={e => setRoomName(e.target.value)}
             />
           </FormGroup>
           <LoaderButton
             block
-            disabled={!this.validateForm()}
+            disabled={!validateForm()}
             type="submit"
-            isLoading={this.state.isLoading}
+            isLoading={isLoading}
             text="Create new room"
             loadingText="Creating new room…"
           />
         </form>
       </div>
-    )
-  }
+    </div>
+  )
 }
+
+export default Rooms

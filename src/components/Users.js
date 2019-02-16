@@ -1,48 +1,59 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
+import io from 'socket.io-client'
 import './Users.css'
 
-export default class Users extends Component {
-  constructor(props) {
-    super(props)
+const socket = io('localhost:3001')
 
-    this.state = {
-      isLoading: true,
-      users: []
+const Users = () => {
+  const [, setNumUsers] = useState(0)
+  const [usersList, setUsersList] = useState([])
+
+  useEffect(() => {
+    socket.open()
+    socket.emit('list_users')
+    return () => {
+      socket.close()
     }
+  }, [])
+
+  useEffect(() => {
+    socket.on('list_users', getUsersList)
+    return () => socket.removeListener('list_users', getUsersList)
+  }, [usersList])
+
+  useEffect(() => {
+    socket.on('new_user', receiveNewUser)
+    return () => socket.removeListener('new_user', receiveNewUser)
+  }, [usersList])
+
+  const getUsersList = users => {
+    setUsersList(users)
+    setNumUsers(users.length)
   }
 
-  async listUsers() {
-    try {
-      const response = await fetch('/api/users')
-      const Users = await response.json()
-
-      this.setState({
-        users: Users
-      })
-    } catch (error) {
-      console.error(error)
-    }
+  const receiveNewUser = user => {
+    console.log(user)
+    var users = usersList
+    console.log(usersList)
+    users.push(user)
+    setUsersList(users)
+    setNumUsers(users.length)
   }
 
-  componentDidMount() {
-    this.listUsers()
-  }
-
-  render() {
-    const { users } = this.state
-    const userlist = users.map(u => (
-      <li key={u.username}>
-        {u.nickname} - ({u.username})
-      </li>
-    ))
-
-    return (
-      <div className="Users">
-        <h4>Users</h4>
-        <div>
-          <ul>{userlist}</ul>
-        </div>
+  return (
+    <div className="Users">
+      <h4>Users</h4>
+      <div>
+        <ul>
+          {usersList.map(u => (
+            <li key={u.username}>
+              {u.nickname} - ({u.username})
+            </li>
+          ))}
+        </ul>
       </div>
-    )
-  }
+    </div>
+  )
 }
+
+export default Users
