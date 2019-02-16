@@ -2,4 +2,8 @@
   .Rooms {
     padding: 10px 0;
   }
+
+  .Rooms form {
+    max-width: 480px;
+  }
 }

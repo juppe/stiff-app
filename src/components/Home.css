@@ -1,0 +1,24 @@
+.Home .Landingpage {
+  padding: 10px 0;
+  text-align: center;
+}
+.Home .Chat {
+  padding: 10px 0;
+  text-align: center;
+}
+
+.Home .Landingpage h1 {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+}
+
+.Home .Landingpage p {
+  color: #999;
+}
+
+.Home .Landingpage div {
+  padding-top: 20px;
+}
+.Home .Landingpage div a:first-child {
+  margin-right: 20px;
+}
