@@ -39,7 +39,7 @@ const Login = props => {
     }
     setIsLoading(false)
 
-    if (userContext.isAuthenticated) {
+    if (userContext.isAuthenticated === true) {
       props.history.push({
         pathname: '/',
         state: { login: true }
