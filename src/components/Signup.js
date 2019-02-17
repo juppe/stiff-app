@@ -10,6 +10,10 @@ const Signup = props => {
   const [nickname, setNickname] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [addUserFeedback, setAddUserFeedback] = useState({
+    invalid: false,
+    message: ''
+  })
 
   const userContext = useContext(UserContext)
 
@@ -37,15 +41,35 @@ const Signup = props => {
         })
       })
       const res = await response.json()
-      console.log('User created : ' + res)
+      console.log(res)
+      if (res.status === 'OK') {
+        setIsLoading(false)
+        userContext.isAuthenticated = true
+        props.history.push('/')
+        return
+      } else if (res.status === 'ERROR') {
+        setAddUserFeedback({
+          invalid: true,
+          message: res.message
+        })
+        setIsLoading(false)
+        return
+      }
     } catch (e) {
       console.log('New user: ' + e.message)
       alert('New user: ' + e.message)
     }
+  }
 
-    setIsLoading(false)
-    userContext.isAuthenticated = true
-    props.history.push('/rooms')
+  const handleUsernameChange = event => {
+    setUsername(event.target.value)
+
+    if (addUserFeedback.invalid) {
+      setAddUserFeedback({
+        invalid: false,
+        message: ''
+      })
+    }
   }
 
   return (
@@ -57,8 +81,12 @@ const Signup = props => {
             autoFocus
             type="email"
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            isInvalid={addUserFeedback.invalid}
+            onChange={handleUsernameChange}
           />
+          <FormControl.Feedback type="invalid">
+            {addUserFeedback.message}
+          </FormControl.Feedback>
         </FormGroup>
         <FormGroup controlId="nickname">
           <FormLabel>Nickname</FormLabel>

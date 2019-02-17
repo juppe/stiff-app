@@ -6,4 +6,8 @@
   .Rooms form {
     max-width: 480px;
   }
+
+  .Rooms .addRoom {
+    margin-top: 2em;
+  }
 }
