@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import io from 'socket.io-client'
-import { FormGroup, FormControl, FormLabel } from 'react-bootstrap'
+import {
+  FormGroup,
+  FormControl,
+  ListGroup,
+  Container,
+  Row,
+  Col
+} from 'react-bootstrap'
 import LoaderButton from './LoaderButton'
 import Rooms from './Rooms'
 import './Chat.css'
@@ -14,7 +21,10 @@ const Chat = props => {
   const [, setNumMessages] = useState(0)
   const [messagesList, setMessagesList] = useState([])
 
+  const lastMessage = useRef()
+
   useEffect(() => {
+    console.log("SELECT ROOM")
     var passedRoom = ''
     try {
       passedRoom = props.location.state.selectedRoom
@@ -30,7 +40,7 @@ const Chat = props => {
   useEffect(() => {
     socket.open()
     socket.emit('join_room', selectedRoom)
-    return () => socket.close()
+    //return () => socket.close()
   }, [selectedRoom])
 
   useEffect(() => {
@@ -44,9 +54,14 @@ const Chat = props => {
   }, [messagesList])
 
   const getMessagesList = messages => {
-    setMessagesList(messages)
-    setNumMessages(messages.length)
     setIsLoading(false)
+    setMessagesList(messages)
+
+    const messagesLen = messages.length
+    if (messagesLen > 0) {
+      setNumMessages(messagesLen)
+      scrollToLastMessage()
+    }
   }
 
   const receiveNewMessage = message => {
@@ -54,6 +69,7 @@ const Chat = props => {
     messages.push(message)
     setMessagesList(messages)
     setNumMessages(messages.length)
+    scrollToLastMessage()
   }
 
   const validateForm = () => {
@@ -61,7 +77,6 @@ const Chat = props => {
   }
 
   const handleSubmit = async event => {
-    setIsLoading(true)
     event.preventDefault()
     const timestamp = Date.now()
 
@@ -80,19 +95,22 @@ const Chat = props => {
     } catch (e) {
       alert(e.message)
     }
-    setIsLoading(false)
+  }
+
+  const scrollToLastMessage = () => {
+    lastMessage.current.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
-    <div className="Chat">
-      <div className="row ">
-        <div className="col">
+    <Container className="Chat">
+      <Row>
+        <Col xs={2}>
           <Rooms />
-        </div>
-        <div className="col-8">
+        </Col>
+        <Col xs={8}>
           {selectedRoom ? (
             <div>
-              <h4>Chat: {selectedRoom}</h4>
+              <h4>{selectedRoom}</h4>
               <div>
                 {isLoading ? (
                   <LoaderButton
@@ -101,22 +119,31 @@ const Chat = props => {
                     loadingText="Loading..."
                   />
                 ) : (
-                  messagesList.map(message => {
-                    return (
-                      <div key={message.date}>
-                        {message.nickname}@{message.date}: {message.message}
-                      </div>
-                    )
-                  })
+                  <ListGroup className="Messages">
+                    {messagesList.map(message => {
+                      return (
+                        <ListGroup.Item key={message.date}>
+                          <p>
+                            {message.nickname}@{message.date}:
+                          </p>
+                          {message.message}
+                        </ListGroup.Item>
+                      )
+                    })}
+                    <div
+                      style={{ float: 'left', clear: 'both' }}
+                      ref={lastMessage}
+                    />
+                  </ListGroup>
                 )}
               </div>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} className="SubmitMessage">
                 <FormGroup controlId="message">
-                  <FormLabel>Write a message</FormLabel>
                   <FormControl
                     autoFocus
                     type="text"
                     value={newMessage}
+                    placeholder="Write a message"
                     onChange={e => setNewMessage(e.target.value)}
                   />
                 </FormGroup>
@@ -131,13 +158,11 @@ const Chat = props => {
               </form>
             </div>
           ) : (
-            <div>
-              <p>Please select a chat room!</p>
-            </div>
+            <p>Please select a chat room!</p>
           )}
-        </div>
-      </div>
-    </div>
+        </Col>
+      </Row>
+    </Container>
   )
 }
 

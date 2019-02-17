@@ -2,4 +2,28 @@
   .Chat {
     padding: 10px 0;
   }
+
+  .Chat .Rooms {
+    padding: 0 0;
+  }
+
+  .Chat .Messages.list-group {
+    height: 70vh;
+    overflow: scroll;
+    padding-bottom: 0.3rem;
+  }
+
+  .Chat .Messages .list-group-item {
+    padding-bottom: 0.3rem;
+    padding-top: 0.3rem;
+  }
+
+  .Chat .Messages .list-group-item p {
+    font-size: 12px;
+    margin-bottom: 0rem;
+  }
+
+  .Chat .SubmitMessage {
+    margin-top: 1rem;
+  }
 }
