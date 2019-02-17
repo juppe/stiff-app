@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, Fragment } from 'react'
 import { NavLink, Link, withRouter } from 'react-router-dom'
-import { Nav, Navbar } from 'react-bootstrap'
+import { Nav, Navbar, Container } from 'react-bootstrap'
 import { UserContext } from './UserContext'
 import Routes from './Routes'
 import './App.css'
@@ -19,7 +19,7 @@ const App = props => {
   }, [userContext.isAuthenticated])
 
   return (
-    <div className="App container">
+    <Container className="App">
       <Navbar bg="light">
         <Navbar.Brand>
           <Link to="/" className="nav-link">
@@ -29,7 +29,7 @@ const App = props => {
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
           <Nav variant="pills">
-            {isAuthenticated ? (
+            {isAuthenticated === true ? (
               <Fragment>
                 <Nav.Item>
                   <NavLink to="/chat" className="nav-link">
@@ -70,7 +70,7 @@ const App = props => {
         </Navbar.Collapse>
       </Navbar>
       <Routes />
-    </div>
+    </Container>
   )
 }
 
