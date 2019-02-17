@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import io from 'socket.io-client'
+import { ListGroup } from 'react-bootstrap'
 import './Users.css'
 
 const socket = io('localhost:3001')
@@ -44,13 +45,13 @@ const Users = () => {
     <div className="Users">
       <h4>Users</h4>
       <div>
-        <ul>
+        <ListGroup>
           {usersList.map(u => (
-            <li key={u.username}>
+            <ListGroup.Item key={u.username}>
               {u.nickname} - ({u.username})
-            </li>
+            </ListGroup.Item>
           ))}
-        </ul>
+        </ListGroup>
       </div>
     </div>
   )
