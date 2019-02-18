@@ -1,3 +1,4 @@
+import io from 'socket.io-client'
 import React, { useState, useEffect, useContext, Fragment } from 'react'
 import { NavLink, Link, withRouter } from 'react-router-dom'
 import { Nav, Navbar, Container } from 'react-bootstrap'
@@ -5,18 +6,48 @@ import { UserContext } from './UserContext'
 import Routes from './Routes'
 import './App.css'
 
-const App = props => {
+const App = () => {
   const userContext = useContext(UserContext)
+  const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  const authenticated = async () => {
-    const auth = await userContext.isAuthenticated
+  // Check if user is authenticated in back end
+  const checkAuth = async () => {
+    let auth = false
+    try {
+      const response = await fetch('/api/login')
+      const res = await response.json()
+
+      if (response.status === 200 && res.status === 'OK') {
+        auth = true
+      }
+    } catch (e) {
+      alert('Authentication failed:' + e.message)
+    }
+
+    // Open Socket.IO connection when succesfully logged in
+    if (auth === true) {
+      // Socket.IO connection
+      // FIXME: hardcoded host / port
+      const socket = io('localhost:3001')
+
+      // Store socket connection in context
+      userContext.socket = socket
+    }
+
+    // Keep login state in context
+    userContext.isAuthenticated = auth
     setIsAuthenticated(auth)
+    setIsLoading(false)
   }
 
   useEffect(() => {
-    authenticated()
+    checkAuth()
   }, [userContext.isAuthenticated])
+
+  if (isLoading) {
+    return null
+  }
 
   return (
     <Container className="App">
