@@ -1,5 +1,11 @@
 import React, { useState, useContext } from 'react'
-import { FormGroup, FormControl, FormLabel } from 'react-bootstrap'
+import {
+  Form,
+  FormGroup,
+  FormControl,
+  FormLabel,
+  Container
+} from 'react-bootstrap'
 import LoaderButton from '../components/LoaderButton'
 import { UserContext } from '../UserContext'
 import './Signup.css'
@@ -17,6 +23,7 @@ const Signup = props => {
 
   const userContext = useContext(UserContext)
 
+  // Validate form input
   const validateForm = () => {
     return (
       username.length > 0 &&
@@ -26,6 +33,7 @@ const Signup = props => {
     )
   }
 
+  // Post new user to back end
   const handleSubmit = async event => {
     event.preventDefault()
     setIsLoading(true)
@@ -41,26 +49,25 @@ const Signup = props => {
         })
       })
       const res = await response.json()
-      console.log(res)
+
       if (res.status === 'OK') {
         setIsLoading(false)
         userContext.isAuthenticated = true
         props.history.push('/')
-        return
       } else if (res.status === 'ERROR') {
+        // Flag invalidity when back end returns error
         setAddUserFeedback({
           invalid: true,
           message: res.message
         })
         setIsLoading(false)
-        return
       }
     } catch (e) {
-      console.log('New user: ' + e.message)
-      alert('New user: ' + e.message)
+      alert('Error creating user: ' + e.message)
     }
   }
 
+  // Handle change in username input
   const handleUsernameChange = event => {
     setUsername(event.target.value)
 
@@ -73,8 +80,8 @@ const Signup = props => {
   }
 
   return (
-    <div className="Signup">
-      <form onSubmit={handleSubmit}>
+    <Container className="Signup">
+      <Form onSubmit={handleSubmit}>
         <FormGroup controlId="username">
           <FormLabel>Email</FormLabel>
           <FormControl
@@ -120,8 +127,8 @@ const Signup = props => {
           text="Signup"
           loadingText="Signing up…"
         />
-      </form>
-    </div>
+      </Form>
+    </Container>
   )
 }
 

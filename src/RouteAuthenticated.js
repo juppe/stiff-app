@@ -5,13 +5,14 @@ import { UserContext } from './UserContext'
 const RouteAuthenticated = props => {
   const userContext = useContext(UserContext)
   const isAuthenticated = userContext.isAuthenticated
+
   const { component: Component, ...rest } = props
 
   return (
     <Route
       {...rest}
       render={props => {
-        return isAuthenticated ? (
+        return isAuthenticated === true ? (
           <Component {...props} />
         ) : (
           <Redirect

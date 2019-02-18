@@ -1,5 +1,11 @@
 import React, { useState, useContext } from 'react'
-import { FormGroup, FormControl, FormLabel } from 'react-bootstrap'
+import {
+  Form,
+  FormGroup,
+  FormControl,
+  FormLabel,
+  Container
+} from 'react-bootstrap'
 import LoaderButton from './LoaderButton'
 import { UserContext } from '../UserContext'
 import './Login.css'
@@ -15,6 +21,7 @@ const Login = props => {
     return username.length > 0 && password.length > 0
   }
 
+  // Submit login request to back end
   const handleSubmit = async event => {
     event.preventDefault()
     setIsLoading(true)
@@ -39,17 +46,15 @@ const Login = props => {
     }
     setIsLoading(false)
 
+    // Redirect to fron page on succesful login
     if (userContext.isAuthenticated === true) {
-      props.history.push({
-        pathname: '/',
-        state: { login: true }
-      })
+      props.history.push('/')
     }
   }
 
   return (
-    <div className="Login">
-      <form onSubmit={handleSubmit}>
+    <Container className="Login">
+      <Form onSubmit={handleSubmit}>
         <FormGroup controlId="username">
           <FormLabel>Email</FormLabel>
           <FormControl
@@ -75,8 +80,8 @@ const Login = props => {
           text="Login"
           loadingText="Logging in…"
         />
-      </form>
-    </div>
+      </Form>
+    </Container>
   )
 }
 

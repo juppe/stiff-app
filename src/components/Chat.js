@@ -1,86 +1,84 @@
-import React, { useState, useEffect, useRef } from 'react'
-import io from 'socket.io-client'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import {
   FormGroup,
   FormControl,
   ListGroup,
   Container,
   Row,
-  Col
+  Col,
+  Form
 } from 'react-bootstrap'
+import { UserContext } from '../UserContext'
 import LoaderButton from './LoaderButton'
 import Rooms from './Rooms'
 import './Chat.css'
-
-const socket = io('localhost:3001')
 
 const Chat = props => {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState('')
   const [newMessage, setNewMessage] = useState('')
-  const [, setNumMessages] = useState(0)
   const [messagesList, setMessagesList] = useState([])
-
   const lastMessage = useRef()
 
-  useEffect(() => {
-    console.log("SELECT ROOM")
-    var passedRoom = ''
-    try {
-      passedRoom = props.location.state.selectedRoom
-    } catch (err) {}
+  // Get socket connection from context
+  const userContext = useContext(UserContext)
+  const socket = userContext.socket
 
-    if (passedRoom && passedRoom !== selectedRoom) {
+  // Select chat room based on selectedRoom prop
+  useEffect(() => {
+    try {
+      const passedRoom = props.location.state.selectedRoom
+
       setIsLoading(true)
       setMessagesList([])
       setSelectedRoom(passedRoom)
-    }
-  }, [props])
+    } catch (e) {}
+  }, [props.location.state])
 
+  // Open socket and join chat room
   useEffect(() => {
     socket.open()
     socket.emit('join_room', selectedRoom)
-    //return () => socket.close()
   }, [selectedRoom])
 
+  // Receive message history of chat room
   useEffect(() => {
     socket.on('list_messages', getMessagesList)
     return () => socket.removeListener('list_messages', getMessagesList)
   }, [messagesList])
 
+  // Receive new message posted in chat room
   useEffect(() => {
     socket.on('new_chat', receiveNewMessage)
     return () => socket.removeListener('new_chat', receiveNewMessage)
   }, [messagesList])
 
+  // Process received message list
   const getMessagesList = messages => {
-    setIsLoading(false)
     setMessagesList(messages)
+    setIsLoading(false)
 
-    const messagesLen = messages.length
-    if (messagesLen > 0) {
-      setNumMessages(messagesLen)
+    if (messages.length) {
       scrollToLastMessage()
     }
   }
 
+  // Process received new message
   const receiveNewMessage = message => {
-    var messages = messagesList
-    messages.push(message)
-    setMessagesList(messages)
-    setNumMessages(messages.length)
+    setMessagesList([...messagesList, message])
     scrollToLastMessage()
   }
 
+  // Validate message before posting
   const validateForm = () => {
     return newMessage.length > 0
   }
 
+  // Post new message to back end
   const handleSubmit = async event => {
     event.preventDefault()
     const timestamp = Date.now()
 
-    /* Post new message */
     try {
       await fetch('/api/messages', {
         method: 'POST',
@@ -93,12 +91,48 @@ const Chat = props => {
       })
       setNewMessage('')
     } catch (e) {
-      alert(e.message)
+      alert('Message post failed:' + e.message)
     }
   }
 
+  // Scroll to last message on chat room
   const scrollToLastMessage = () => {
     lastMessage.current.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  // Form for submitting new message
+  const addMessageForm = () => (
+    <Form onSubmit={handleSubmit} className="SubmitMessage">
+      <FormGroup controlId="message">
+        <FormControl
+          autoFocus
+          type="text"
+          value={newMessage}
+          placeholder="Write a message"
+          onChange={e => setNewMessage(e.target.value)}
+        />
+      </FormGroup>
+      <LoaderButton
+        block
+        disabled={!validateForm()}
+        type="submit"
+        isLoading={isLoading}
+        text="Submit"
+        loadingText="Submitting…"
+      />
+    </Form>
+  )
+
+  // Buld messages list
+  const listMessages = () => {
+    return messagesList.map(message => (
+      <ListGroup.Item key={message.date}>
+        <p>
+          {message.nickname}@{message.date}:
+        </p>
+        {message.message}
+      </ListGroup.Item>
+    ))
   }
 
   return (
@@ -107,55 +141,15 @@ const Chat = props => {
         <Col xs={2}>
           <Rooms />
         </Col>
-        <Col xs={8}>
+        <Col xs={10}>
           {selectedRoom ? (
             <div>
               <h4>{selectedRoom}</h4>
-              <div>
-                {isLoading ? (
-                  <LoaderButton
-                    block
-                    isLoading={isLoading}
-                    loadingText="Loading..."
-                  />
-                ) : (
-                  <ListGroup className="Messages">
-                    {messagesList.map(message => {
-                      return (
-                        <ListGroup.Item key={message.date}>
-                          <p>
-                            {message.nickname}@{message.date}:
-                          </p>
-                          {message.message}
-                        </ListGroup.Item>
-                      )
-                    })}
-                    <div
-                      style={{ float: 'left', clear: 'both' }}
-                      ref={lastMessage}
-                    />
-                  </ListGroup>
-                )}
-              </div>
-              <form onSubmit={handleSubmit} className="SubmitMessage">
-                <FormGroup controlId="message">
-                  <FormControl
-                    autoFocus
-                    type="text"
-                    value={newMessage}
-                    placeholder="Write a message"
-                    onChange={e => setNewMessage(e.target.value)}
-                  />
-                </FormGroup>
-                <LoaderButton
-                  block
-                  disabled={!validateForm()}
-                  type="submit"
-                  isLoading={isLoading}
-                  text="Submit"
-                  loadingText="Submiting…"
-                />
-              </form>
+              <ListGroup className="Messages">
+                {listMessages()}
+                <div ref={lastMessage} />
+              </ListGroup>
+              {addMessageForm()}
             </div>
           ) : (
             <p>Please select a chat room!</p>

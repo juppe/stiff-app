@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from 'react'
-import io from 'socket.io-client'
-import { ListGroup } from 'react-bootstrap'
+import React, { useState, useEffect, useContext } from 'react'
+import { ListGroup, Container } from 'react-bootstrap'
+import { UserContext } from '../UserContext'
 import './Users.css'
 
-const socket = io('localhost:3001')
-
 const Users = () => {
-  const [, setNumUsers] = useState(0)
   const [usersList, setUsersList] = useState([])
 
+  // Get socket connection from context
+  const userContext = useContext(UserContext)
+  const socket = userContext.socket
+
+  // Open socket and request user list
   useEffect(() => {
     socket.open()
     socket.emit('list_users')
-    return () => {
-      socket.close()
-    }
   }, [])
 
+  // Receive user list
   useEffect(() => {
     socket.on('list_users', getUsersList)
     return () => socket.removeListener('list_users', getUsersList)
   }, [usersList])
 
+  // Receive new user
   useEffect(() => {
     socket.on('new_user', receiveNewUser)
     return () => socket.removeListener('new_user', receiveNewUser)
@@ -29,31 +30,26 @@ const Users = () => {
 
   const getUsersList = users => {
     setUsersList(users)
-    setNumUsers(users.length)
   }
 
   const receiveNewUser = user => {
-    console.log(user)
-    var users = usersList
-    console.log(usersList)
-    users.push(user)
-    setUsersList(users)
-    setNumUsers(users.length)
+    setUsersList([...usersList, user])
+  }
+
+  // Buld users list
+  const listUsers = () => {
+    return usersList.map(u => (
+      <ListGroup.Item key={u.username}>
+        {u.nickname} - ({u.username})
+      </ListGroup.Item>
+    ))
   }
 
   return (
-    <div className="Users">
+    <Container className="Users">
       <h4>Users</h4>
-      <div>
-        <ListGroup>
-          {usersList.map(u => (
-            <ListGroup.Item key={u.username}>
-              {u.nickname} - ({u.username})
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      </div>
-    </div>
+      <ListGroup>{listUsers()}</ListGroup>
+    </Container>
   )
 }
 

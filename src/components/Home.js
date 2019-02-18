@@ -1,23 +1,15 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { UserContext } from '../UserContext'
 import './Home.css'
+import { Container } from 'react-bootstrap'
 
 const Home = () => {
   const userContext = useContext(UserContext)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  const authenticated = async () => {
-    const auth = await userContext.isAuthenticated
-    setIsAuthenticated(auth)
-  }
-
-  useEffect(() => {
-    authenticated()
-  }, [userContext.isAuthenticated])
+  const isAuthenticated = userContext.isAuthenticated
 
   return (
-    <div className="Home">
+    <Container className="Home">
       {isAuthenticated === true ? (
         <div className="Chat">
           <h4>Stiff Chat Service</h4>
@@ -35,7 +27,7 @@ const Home = () => {
           </div>
         </div>
       )}
-    </div>
+    </Container>
   )
 }
 
