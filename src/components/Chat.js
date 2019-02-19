@@ -29,16 +29,20 @@ const Chat = props => {
     try {
       const passedRoom = props.location.state.selectedRoom
 
-      setIsLoading(true)
-      setMessagesList([])
-      setSelectedRoom(passedRoom)
+      if (passedRoom !== selectedRoom) {
+        setIsLoading(true)
+        setMessagesList([])
+        setSelectedRoom(passedRoom)
+      }
     } catch (e) {}
   }, [props.location.state])
 
   // Open socket and join chat room
   useEffect(() => {
-    socket.open()
-    socket.emit('join_room', selectedRoom)
+    if (selectedRoom !== '') {
+      socket.open()
+      socket.emit('join_room', selectedRoom)
+    }
   }, [selectedRoom])
 
   // Receive message history of chat room
