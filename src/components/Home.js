@@ -13,6 +13,7 @@ const Home = () => {
       {isAuthenticated === true ? (
         <div className="Chat">
           <h4>Stiff Chat Service</h4>
+          <p>Welcome to the Stiff Chat Service</p>
         </div>
       ) : (
         <div className="Landingpage">

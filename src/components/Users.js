@@ -18,8 +18,8 @@ const Users = () => {
 
   // Receive user list
   useEffect(() => {
-    socket.on('list_users', getUsersList)
-    return () => socket.removeListener('list_users', getUsersList)
+    socket.on('users_list', getUsersList)
+    return () => socket.removeListener('users_list', getUsersList)
   }, [usersList])
 
   // Receive new user

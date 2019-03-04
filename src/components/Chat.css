@@ -7,9 +7,18 @@
     padding: 0 0;
   }
 
+  .Chat .RoomMembers {
+    margin-left: 2rem;
+  }
+
+  .Chat .RoomMembers .fa-user-secret {
+    margin-right: 0.5rem;
+  }
+
   .Chat .Messages.list-group {
     height: 70vh;
     overflow: scroll;
+    padding-top: 0.5rem;
     padding-bottom: 0.3rem;
   }
 

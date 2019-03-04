@@ -38,8 +38,8 @@ const Rooms = props => {
 
   // Receive list of rooms
   useEffect(() => {
-    socket.on('list_rooms', getRoomsList)
-    return () => socket.removeListener('list_rooms', getRoomsList)
+    socket.on('rooms_list', getRoomsList)
+    return () => socket.removeListener('rooms_list', getRoomsList)
   }, [roomsList])
 
   // Receive new room

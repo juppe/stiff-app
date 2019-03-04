@@ -4,10 +4,15 @@ import {
   FormControl,
   ListGroup,
   Container,
+  OverlayTrigger,
+  Popover,
   Row,
   Col,
   Form
 } from 'react-bootstrap'
+import * as R from 'ramda'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUserSecret } from '@fortawesome/free-solid-svg-icons'
 import { UserContext } from '../UserContext'
 import LoaderButton from './LoaderButton'
 import Rooms from './Rooms'
@@ -18,6 +23,7 @@ const Chat = props => {
   const [selectedRoom, setSelectedRoom] = useState('')
   const [newMessage, setNewMessage] = useState('')
   const [messagesList, setMessagesList] = useState([])
+  const [roomMembers, setRoomMembers] = useState({ qty: 0, members: [] })
   const lastMessage = useRef()
 
   // Get socket connection from context
@@ -26,15 +32,13 @@ const Chat = props => {
 
   // Select chat room based on selectedRoom prop
   useEffect(() => {
-    try {
-      const passedRoom = props.location.state.selectedRoom
+    const passedRoom = R.path(['location', 'state', 'selectedRoom'], props)
 
-      if (passedRoom !== selectedRoom) {
-        setIsLoading(true)
-        setMessagesList([])
-        setSelectedRoom(passedRoom)
-      }
-    } catch (e) {}
+    if (passedRoom !== undefined && passedRoom !== selectedRoom) {
+      setIsLoading(true)
+      setMessagesList([])
+      setSelectedRoom(passedRoom)
+    }
   }, [props.location.state])
 
   // Open socket and join chat room
@@ -42,13 +46,20 @@ const Chat = props => {
     if (selectedRoom !== '') {
       socket.open()
       socket.emit('join_room', selectedRoom)
+      socket.emit('room_members', selectedRoom)
     }
   }, [selectedRoom])
 
   // Receive message history of chat room
   useEffect(() => {
-    socket.on('list_messages', getMessagesList)
-    return () => socket.removeListener('list_messages', getMessagesList)
+    socket.on('messages_list', getMessagesList)
+    return () => socket.removeListener('messages_list', getMessagesList)
+  }, [messagesList])
+
+  // Receive members list
+  useEffect(() => {
+    socket.on('members_list', receiveMembersList)
+    return () => socket.removeListener('members_list', receiveMembersList)
   }, [messagesList])
 
   // Receive new message posted in chat room
@@ -65,6 +76,11 @@ const Chat = props => {
     if (messages.length) {
       scrollToLastMessage()
     }
+  }
+
+  // Process received members list
+  const receiveMembersList = members => {
+    setRoomMembers({ qty: members.length, members: members })
   }
 
   // Process received new message
@@ -104,7 +120,18 @@ const Chat = props => {
     lastMessage.current.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // Form for submitting new message
+  // Members list popover
+  const memberListPopover = (
+    <Popover id="popover-basic" title="Active members">
+      <ListGroup className="Members">
+        {roomMembers.members.map(member => (
+          <ListGroup.Item key={member}>{member}</ListGroup.Item>
+        ))}
+      </ListGroup>
+    </Popover>
+  )
+
+  // Submit new message form
   const addMessageForm = () => (
     <Form onSubmit={handleSubmit} className="SubmitMessage">
       <FormGroup controlId="message">
@@ -148,7 +175,17 @@ const Chat = props => {
         <Col xs={10}>
           {selectedRoom ? (
             <div>
-              <h4>{selectedRoom}</h4>
+              <h4 className="d-inline">{selectedRoom}</h4>
+              <OverlayTrigger
+                trigger="click"
+                placement="right"
+                overlay={memberListPopover}
+              >
+                <div className="RoomMembers d-inline">
+                  <FontAwesomeIcon icon={faUserSecret} />
+                  {roomMembers.qty}
+                </div>
+              </OverlayTrigger>
               <ListGroup className="Messages">
                 {listMessages()}
                 <div ref={lastMessage} />
